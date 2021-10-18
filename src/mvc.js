@@ -31,6 +31,9 @@ const controller = {
     missedCol.init();
     checkboxview.init();
   },
+  getAttendance:function(){
+    return model.attendance
+  },
   calculateDaysMissed: function (arr) {
     let count = 0;
     arr.forEach((i) => {
@@ -62,10 +65,10 @@ const checkboxview = {
       let name=e[0].innerText
       for(let i=1;i<=12;i++){
         // e[i].childNodes[0].checked=(Math.random() * 2 >= 1)
-        e[i].childNodes[0].checked=model.attendance[name][i-1]
-        // console.log("checkvalues",name,e[i].childNodes[0].checked,model.attendance[name][i-1])
+        e[i].childNodes[0].checked=controller.getAttendance()[name][i-1]
+        // console.log("checkvalues",name,e[i].childNodes[0].checked,controller.getAttendance()[name][i-1])
       }
-      // console.log(name,model.attendance[name]);
+      // console.log(name,controller.getAttendance()[name]);
     })
     missedCol.render();
   }
@@ -74,12 +77,12 @@ const checkboxview = {
     this.students.forEach((item) => {
       
       let name = item.querySelectorAll(".name-col")[0].innerText;
-      let arr=model.attendance[name];
+      let arr=controller.getAttendance()[name];
       let check = [...item.querySelectorAll(".attend-col input")].map(
         (e) => e.checked
       );
 
-      model.attendance[name] = check;
+      controller.getAttendance()[name] = check;
     });
     controller.localStorageattendance();
     missedCol.render();
@@ -95,7 +98,7 @@ const missedCol = {
   },
   render: function () {
     model.studentNames.forEach((item, index) => {
-      this.studentAttendance = model.attendance[item];
+      this.studentAttendance = controller.getAttendance()[item];
       this.missedDays = controller.calculateDaysMissed(this.studentAttendance);
       this.missed[index].innerText = this.missedDays;
     });
