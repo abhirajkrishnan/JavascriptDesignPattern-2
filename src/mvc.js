@@ -1,39 +1,35 @@
 function getRandom() {
-  return (Math.random()*2 >= 1);
+  return Math.random() * 2 >= 1;
 }
 
 const model = {
-  studentNames: [...document.querySelectorAll("tbody .name-col")].map(
-    (e) => e.innerText
-  ),
+  studentNames: [...document.querySelectorAll("tbody .name-col")].map((e) => e.innerText),
+
   attendance: {},
-  
+
   init: function () {
     if (!localStorage.attendance) {
       model.studentNames.forEach((e) => {
         model.attendance[e] = [];
-        for (let i = 0; i <= 11; i++) model.attendance[e].push((Math.random()*2 >= 1));
+        for (let i = 0; i <= 11; i++) model.attendance[e].push(getRandom());
       });
-                           
-      // localStorage.attendance = JSON.stringify(model.attendance);
-      localStorage.setItem("attendance",JSON.stringify(model.attendance))
-    } 
-    model.attendance =JSON.parse(localStorage.getItem("attendance"))
-    console.log(model.attendance,"asdfdas")
+
+      localStorage.setItem("attendance", JSON.stringify(model.attendance));
+      
+    }
+    model.attendance=JSON.parse(localStorage.getItem("attendance"))
+    
   },
-  localStorageattendance: function () {
-    localStorage.setItem("attendance",JSON.stringify(model.attendance))
-  }
+  
 };
 
 // ---------------------------------------------------------
 
 const controller = {
-  init:function(){
+  init: function () {
     model.init();
     missedCol.init();
-    view.init();
-   
+    checkboxview.init();
   },
   calculateDaysMissed: function (arr) {
     let count = 0;
@@ -41,30 +37,51 @@ const controller = {
       if (i === false) count++;
     });
     return count;
+  },
+  localStorageattendance: function () {
+    localStorage.setItem("attendance", JSON.stringify(model.attendance));
   }
 };
 
 // ---------------------------------------------------------
 
-const view = {
+const checkboxview = {
   init: function () {
     this.checkbox = [...document.querySelectorAll("tbody input")];
     this.students = [...document.querySelectorAll("tbody .student")];
     this.checkbox.forEach((item) => {
-      item.addEventListener("click", view.render.bind(this));
+      item.addEventListener("click", checkboxview.update.bind(this));
     });
-    this.render()
+    this.render();
   },
-
-  render: function () {
+  render:function(){
+    this.studentvalues=[...document.querySelectorAll("tbody .student ")].map(e=>{
+      return e.children
+    })
+    this.studentvalues.forEach(e=>{
+      let name=e[0].innerText
+      for(let i=1;i<=12;i++){
+        // e[i].childNodes[0].checked=(Math.random() * 2 >= 1)
+        e[i].childNodes[0].checked=model.attendance[name][i-1]
+        // console.log("checkvalues",name,e[i].childNodes[0].checked,model.attendance[name][i-1])
+      }
+      // console.log(name,model.attendance[name]);
+    })
+    missedCol.render();
+  }
+,
+  update: function () {
     this.students.forEach((item) => {
+      
+      let name = item.querySelectorAll(".name-col")[0].innerText;
+      let arr=model.attendance[name];
       let check = [...item.querySelectorAll(".attend-col input")].map(
         (e) => e.checked
       );
-      let name = item.querySelectorAll(".name-col")[0].innerText;
+
       model.attendance[name] = check;
     });
-    model.localStorageattendance();
+    controller.localStorageattendance();
     missedCol.render();
   }
 };
@@ -79,18 +96,10 @@ const missedCol = {
   render: function () {
     model.studentNames.forEach((item, index) => {
       this.studentAttendance = model.attendance[item];
-       this.missedDays = controller.calculateDaysMissed(this.studentAttendance);
+      this.missedDays = controller.calculateDaysMissed(this.studentAttendance);
       this.missed[index].innerText = this.missedDays;
     });
-  
-
-  },
+  }
 };
 
-
-
-let miss = [...document.querySelectorAll(".student .missed-col")];
-
-controller.init()
-
-// model.init()
+controller.init();
